@@ -1,28 +1,25 @@
-
 /**
  * MOST Web Framework 2.0 Codename Blueshift
- * Copyright (c) 2014, Kyriakos Barbounakis k.barbounakis@gmail.com
- *                     Anthi Oikonomou anthioikonomou@gmail.com
+ * Copyright (c) 2014-2020, THEMOST LP
  *
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-import { SqlFormatter } from "@themost/query";
 
-export declare interface SqlLiteAdapterTable {
+export declare interface SqliteAdapterTable {
     exists(callback: (err: Error, result: boolean) => void): void;
     version(callback: (err: Error, result: string) => void): void;
     has_sequence(callback: (err: Error, result: boolean) => void): void;
     columns(callback: (err: Error, result: Array<any>) => void): void;
 }
 
-export declare interface SqlLiteAdapterView {
+export declare interface SqliteAdapterView {
     exists(callback: (err: Error, result: boolean) => void): void;
     drop(callback: (err: Error) => void): void;
     create(callback: (err: Error) => void): void;
 }
 
-export declare class SqlLiteAdapter {
+export declare class SqliteAdapter {
     static formatType(field: any): string;
 
     open(callback: (err: Error) => void): void;
@@ -34,12 +31,6 @@ export declare class SqlLiteAdapter {
     selectIdentity(entity: string, attribute: string, callback: (err: Error, value: any) => void): void;
     execute(query: any, values: any, callback: (err: Error, value: any) => void): void;
     lastIdentity(callback: (err: Error, value: any) => void): void;
-    table(name: string): SqlLiteAdapterTable;
-    view(name: string): SqlLiteAdapterView;
+    table(name: string): SqliteAdapterTable;
+    view(name: string): SqliteAdapterView;
 }
-
-export declare class SqliteFormatter extends SqlFormatter {
-    
-}
-
-export declare function createInstance(options: any): SqlLiteAdapter;

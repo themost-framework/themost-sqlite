@@ -1,3 +1,5 @@
 node_modules
 .idea
+.theia
+.vscode
 .DS_STORE
