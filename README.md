@@ -1,6 +1,6 @@
 ![test](https://github.com/themost-framework/themost-sqlite/workflows/test/badge.svg)
 [![npm](https://img.shields.io/npm/v/@themost%2Fsqlite.svg)](https://www.npmjs.com/package/@themost%2Fsqlite)
-![](https://img.shields.io/david/themost-framework/themost-sqlite?path=.)
+![](https://img.shields.io/david/themost-framework/themost-sqlite)
 
 # @themost/sqlite
 MOST Web Framework SQLite Data Adapter
