@@ -1,5 +1,12 @@
+# node.js
 node_modules
+
+# editors
 .idea
 .theia
 .vscode
 .DS_STORE
+
+# test
+spec
+.env
