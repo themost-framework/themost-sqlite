@@ -216,6 +216,6 @@ class SqliteFormatter extends SqlFormatter {
     $date(p0) { return 'date(' + this.escape(p0) + ')'; }
 }
 
-export {
+module.exports = {
     SqliteFormatter
 };

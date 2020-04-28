@@ -1,16 +1,22 @@
 const {SqliteAdapter, createInstance} = require('../index');
+const fs = require('fs');
+const path = require('path');
 const { QueryExpression }  = require('@themost/query')
 const ProductModel = require('./config/models/Product.json');
 const EmployeeModel = require('./config/models/Employee.json');
+const CategoryModel = require('./config/models/Category.json');
 // get options from environmet for testing
 const testConnectionOptions = {
     'database': 'spec/test.db'
 };
 
-describe('MSSqlFormatter', () => {
+describe('SqliteAdapter', () => {
 
     beforeAll( async () => {
-        //
+        const db = path.resolve(process.cwd(), testConnectionOptions.database);
+        if (fs.existsSync(db) === true) {
+            fs.unlinkSync(db);
+        }
     });
     afterAll( async () => {
         //
@@ -48,53 +54,30 @@ describe('MSSqlFormatter', () => {
         expect(adapter.rawConnection).toBeFalsy();
     });
 
-    it('should use database(string).exists()', async () => {
-        // validate and create database
+    it('should use migrate()', async () => {
         /**
          * @type {MSSqlAdapter}
          */
         const adapter = createInstance(testConnectionOptions);
-        const query = new QueryExpression().from('sys.databases').select('database_id', 'name').where('name').equal(testConnectionOptions.database);
-        const res = await adapter.executeAsync(query);
-        expect(res).toBeInstanceOf(Array);
-        expect(res.length).toBeLessThanOrEqual(1);
-        await adapter.closeAsync();
-    });
-
-    it('should use migrate()', async () => {
-        const adapter = new SqliteAdapter(testConnectionOptions);
-    });
-
-    it('should use database(string).exists()', async () => {
-        const adapter = new SqliteAdapter(testConnectionOptions);
-        let exists = await adapter.database(testConnectionOptions.database).existsAsync();
+        await adapter.migrateAsync({
+            add: CategoryModel.fields,
+            appliesTo: CategoryModel.source,
+            version: CategoryModel.version
+        });
+        let exists = await adapter.table(CategoryModel.source).existsAsync();
         expect(exists).toBeTrue();
-        exists = await adapter.database('other_database').existsAsync();
-        expect(exists).toBeFalse();
-        await adapter.closeAsync();
     });
-
-    it('should use database(string).create()', async () => {
-        const adapter = new SqliteAdapter(testConnectionOptions);
-        await adapter.database('test_create_a_database').createAsync();
-        let exists = await adapter.database('test_create_a_database').existsAsync();
-        expect(exists).toBeTrue();
-        await adapter.executeAsync('DROP DATABASE test_create_a_database;');
-        exists = await adapter.database('test_create_a_database').existsAsync();
-        expect(exists).toBeFalse();
-        await adapter.closeAsync();
-    });
-
+    
     it('should use table(string).exists()', async () => {
         const adapter = new SqliteAdapter(testConnectionOptions);
         let exists = await adapter.table(ProductModel.source).existsAsync();
         if (exists === false) {
-            await adapter.table(ProductModel.source).create(ProductModel.fields);
+            await adapter.table(ProductModel.source).createAsync(ProductModel.fields);
         }
         exists = await adapter.table(ProductModel.source).existsAsync();
         expect(exists).toBeTrue();
         // drop table by executing SQL
-        await adapter.executeAsync(`DROP TABLE [${ProductModel.source}];`);
+        await adapter.executeAsync(`DROP TABLE "${ProductModel.source}";`);
         exists = await adapter.table(ProductModel.source).existsAsync();
         expect(exists).toBeFalse();
         await adapter.closeAsync();
@@ -105,13 +88,13 @@ describe('MSSqlFormatter', () => {
         let exists = await adapter.table(ProductModel.source).existsAsync();
         if (exists === true) {
             // drop table
-            await adapter.executeAsync(`DROP TABLE [${ProductModel.source}];`);
+            await adapter.executeAsync(`DROP TABLE "${ProductModel.source}";`);
         }
-        await adapter.table(ProductModel.source).create(ProductModel.fields);
+        await adapter.table(ProductModel.source).createAsync(ProductModel.fields);
         exists = await adapter.table(ProductModel.source).existsAsync();
         expect(exists).toBeTrue();
         // drop table
-        await adapter.executeAsync(`DROP TABLE [${ProductModel.source}];`);
+        await adapter.executeAsync(`DROP TABLE "${ProductModel.source}";`);
         await adapter.closeAsync();
     });
 
@@ -119,7 +102,7 @@ describe('MSSqlFormatter', () => {
         const adapter = new SqliteAdapter(testConnectionOptions);
         let exists = await adapter.table(EmployeeModel.source).existsAsync();
         if (exists === false) {
-            await adapter.table(EmployeeModel.source).create(EmployeeModel.fields);
+            await adapter.table(EmployeeModel.source).createAsync(EmployeeModel.fields);
         }
         const sources = EmployeeModel.seed.map( item => {
             return new QueryExpression().insert(item).into(EmployeeModel.source);
@@ -129,13 +112,13 @@ describe('MSSqlFormatter', () => {
         await Promise.all(sources);
         const query = new QueryExpression().from(EmployeeModel.source)
             .where('LastName').equal('Davolio')
-            .select('*');
+            .select('EmployeeID', 'LastName', 'FirstName');
         let res = await adapter.executeAsync(query);
         expect(res).toBeInstanceOf(Array);
         expect(res.length).toBe(1);
         expect(res[0].LastName).toBe('Davolio')
         // drop table
-        await adapter.executeAsync(`DROP TABLE [${EmployeeModel.source}];`);
+        await adapter.executeAsync(`DROP TABLE "${EmployeeModel.source}";`);
         await adapter.closeAsync();
     });
 
@@ -143,7 +126,7 @@ describe('MSSqlFormatter', () => {
         const adapter = new SqliteAdapter(testConnectionOptions);
         let exists = await adapter.table(EmployeeModel.source).existsAsync();
         if (exists === false) {
-            await adapter.table(EmployeeModel.source).create(EmployeeModel.fields);
+            await adapter.table(EmployeeModel.source).createAsync(EmployeeModel.fields);
         }
         const sources = EmployeeModel.seed.map( item => {
             return new QueryExpression().insert(item).into(EmployeeModel.source);
@@ -159,13 +142,13 @@ describe('MSSqlFormatter', () => {
         await adapter.executeAsync(updateQuery);
         const query = new QueryExpression().from(EmployeeModel.source)
         .where('LastName').equal('Davolio-Arnold')
-        .select('*');
+        .select('EmployeeID', 'LastName', 'FirstName');
         let res = await adapter.executeAsync(query);
         expect(res).toBeInstanceOf(Array);
         expect(res.length).toBe(1);
         expect(res[0].LastName).toBe('Davolio-Arnold');
         // drop table
-        await adapter.executeAsync(`DROP TABLE [${EmployeeModel.source}];`);
+        await adapter.executeAsync(`DROP TABLE "${EmployeeModel.source}";`);
         await adapter.closeAsync();
     });
 
@@ -175,16 +158,17 @@ describe('MSSqlFormatter', () => {
         let exists = await adapter.view('EmployeesView').existsAsync();
         expect(exists).toBeFalse();
 
-        await adapter.table(EmployeeModel.source).create(EmployeeModel.fields);
+        await adapter.table(EmployeeModel.source).createAsync(EmployeeModel.fields);
         
-        await adapter.view('EmployeesView').createAsync(new QueryExpression().from('Employees').select('*'));
+        await adapter.view('EmployeesView').createAsync(new QueryExpression().from('Employees')
+        .select('EmployeeID', 'LastName', 'FirstName', 'BirthDate', 'Photo', 'Notes'));
 
         exists = await adapter.view('EmployeesView').existsAsync();
         expect(exists).toBeTrue();
         // drop view
         await adapter.view('EmployeesView').dropAsync();
         // drop table
-        await adapter.executeAsync(`DROP TABLE [${EmployeeModel.source}];`);
+        await adapter.executeAsync(`DROP TABLE "${EmployeeModel.source}";`);
         await adapter.closeAsync();
     });
 

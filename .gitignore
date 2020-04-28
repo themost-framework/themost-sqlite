@@ -110,3 +110,4 @@ dist
 .DS_Store
 # Testing
 spec/helpers/env.js
+spec/test.db

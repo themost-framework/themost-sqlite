@@ -17,7 +17,7 @@ function createInstance(options) {
     return new SqliteAdapter(options);
 }
 
-export {
+module.exports = {
     SqliteAdapter,
     SqliteFormatter,
     createInstance

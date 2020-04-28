@@ -48,6 +48,21 @@ class SqliteAdapter {
             });
         }
     }
+
+    /**
+     * Opens a database connection
+     */
+    openAsync() {
+        return new Promise((resolve, reject) => {
+            return this.open( err => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve();
+            });
+        });
+    }
+
     close(callback) {
         const self = this;
         callback = callback || function () { };
@@ -55,6 +70,8 @@ class SqliteAdapter {
             if (self.rawConnection) {
                 //close connection
                 self.rawConnection.close(function () {
+                    // clear rawConnection
+                    self.rawConnection = null;
                     //and finally return
                     callback();
                 });
@@ -69,6 +86,19 @@ class SqliteAdapter {
             //call callback without error
             callback();
         }
+    }
+    /**
+     * Closes the current database connection
+     */
+    closeAsync() {
+        return new Promise((resolve, reject) => {
+            return this.close( err => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve();
+            });
+        });
     }
     /**
      * @param {string} query
@@ -144,6 +174,14 @@ class SqliteAdapter {
             return s.concat((field.nullable === undefined) ? ' NULL' : (field.nullable ? ' NULL' : ' NOT NULL'));
         }
     }
+    static format(format, obj) {
+        let result = format;
+        if (/%t/.test(format))
+            result = result.replace(/%t/g, SqliteAdapter.formatType(obj));
+        if (/%f/.test(format))
+            result = result.replace(/%f/g, obj.name);
+        return result;
+    }
     /**
      * Begins a transactional operation by executing the given function
      * @param fn {function} The function to execute
@@ -195,6 +233,28 @@ class SqliteAdapter {
             }
         });
     }
+
+    /**
+     * Begins a data transaction and executes the given function
+     * @param func {Function}
+     */
+    executeInTransactionAsync(func) {
+        return new Promise((resolve, reject) => {
+            return this.executeInTransaction((callback) => {
+                return func.call(this).then( res => {
+                    return callback(null, res);
+                }).catch( err => {
+                    return callback(err);
+                });
+            }, (err, res) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(res);
+            });
+        });
+    }
+
     /**
      *
      * @param {string} name
@@ -494,6 +554,21 @@ class SqliteAdapter {
         });
     }
     /**
+     * 
+     * @param {SqliteAdapterMigration} obj 
+     * @returns {*}
+     */
+    migrateAsync(obj) {
+        return new Promise((resolve, reject) => {
+            this.migrate(obj, (err, res) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(res);
+            });
+        });
+    }
+    /**
      * Produces a new identity value for the given entity and attribute.
      * @param entity {String} The target entity name
      * @param attribute {String} The target attribute
@@ -588,6 +663,16 @@ class SqliteAdapter {
                     callback(null, (result[0].count > 0));
                 });
             },
+            existsAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.exists((err, value) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(value);
+                    });
+                });
+            },
             /**
              * @param {function(Error,string=)} callback
              */
@@ -602,6 +687,16 @@ class SqliteAdapter {
                         callback(null, result[0].version || '0.0');
                 });
             },
+            versionAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.version((err, value) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(value);
+                    });
+                });
+            },
             /**
              * @param {function(Error,Boolean=)} callback
              */
@@ -613,6 +708,16 @@ class SqliteAdapter {
                         return;
                     }
                     callback(null, (result[0].count > 0));
+                });
+            },
+            has_sequenceAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.has_sequence((err, res) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(res);
+                    });
                 });
             },
             /**
@@ -648,6 +753,46 @@ class SqliteAdapter {
                     result.forEach(iterator);
                     callback(null, arr);
                 });
+            },
+            columnsAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.columns((err, res) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(res);
+                    });
+                });
+            },
+            /**
+             * 
+             * @param {Array<*>} fields 
+             * @param {Function} callback 
+             */
+            create: function(fields, callback) {
+                //create table
+                const strFields = fields.filter(function (x) {
+                    return !x.oneToMany;
+                }).map(function (x) {
+                    return SqliteAdapter.format('"%f" %t', x);
+                }).join(', ');
+                const sql = util.format('CREATE TABLE "%s" (%s)', name, strFields);
+                self.execute(sql, null, function (err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return callback();
+                });
+            },
+            createAsync: function(fields) {
+                return new Promise((resolve, reject) => {
+                    this.create(fields, (err, res) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(res);
+                    });
+                });
             }
         };
     }
@@ -664,6 +809,16 @@ class SqliteAdapter {
                         return;
                     }
                     callback(null, (result[0].count > 0));
+                });
+            },
+            existsAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.exists((err, value) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve(value);
+                    });
                 });
             },
             /**
@@ -683,6 +838,16 @@ class SqliteAdapter {
                             return;
                         }
                         callback();
+                    });
+                });
+            },
+            dropAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.drop((err) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve();
                     });
                 });
             },
@@ -710,6 +875,16 @@ class SqliteAdapter {
                     });
                 }, function (err) {
                     callback(err);
+                });
+            },
+            createAsync: function(q) {
+                return new Promise((resolve, reject) => {
+                    this.create(q, (err) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve();
+                    });
                 });
             }
         };
@@ -805,6 +980,23 @@ class SqliteAdapter {
             callback.call(self, e);
         }
     }
+
+    /**
+     * @param query {*}
+     * @param values {*}
+     * @returns Promise<any>
+     */
+    executeAsync(query, values) {
+        return new Promise((resolve, reject) => {
+            return this.execute(query, values, (err, res) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(res);
+            });
+        });
+    }
+
     lastIdentity(callback) {
         const self = this;
         self.open(function (err) {
@@ -867,6 +1059,16 @@ class SqliteAdapter {
                     });
                 });
             },
+            listAsync: function() {
+                return new Promise((resolve, reject) => {
+                    this.list((err) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve();
+                    });
+                });
+            },
             /**
              * @param {string} name
              * @param {Array|string} columns
@@ -922,6 +1124,16 @@ class SqliteAdapter {
                     }
                 });
             },
+            createAsync: function(q) {
+                return new Promise((resolve, reject) => {
+                    this.create(q, (err) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve();
+                    });
+                });
+            },
             drop: function (name, callback) {
                 if (typeof name !== 'string') {
                     return callback(new Error('Name must be a valid string.'));
@@ -936,11 +1148,21 @@ class SqliteAdapter {
                     }
                     self.execute(util.format('DROP INDEX %s', self.escapeName(name)), [], callback);
                 });
+            },
+            dropAsync: function(name) {
+                return new Promise((resolve, reject) => {
+                    this.drop(name, (err) => {
+                        if (err) {
+                            return reject(err);
+                        }
+                        return resolve();
+                    });
+                });
             }
         };
     }
 }
 
-export {
+module.exports = {
     SqliteAdapter
 };
