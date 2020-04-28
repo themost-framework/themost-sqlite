@@ -1,5 +1,7 @@
+![test](https://github.com/themost-framework/themost-sqlite/workflows/test/badge.svg)
+
 # @themost/sqlite
-MOST Web Framework SQLite Adapter
+MOST Web Framework SQLite Data Adapter
 
 ## Install
 
