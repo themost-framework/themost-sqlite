@@ -7,7 +7,6 @@
  */
 
 const {waterfall, eachSeries} = require('async');
-const {findIndex, find, isNil, map} = require('lodash');
 const util = require('util');
 const {TraceUtils} = require('@themost/common');
 const { QueryExpression, QueryField, SqlUtils } = require('@themost/query');
@@ -271,7 +270,7 @@ class SqliteAdapter {
     migrate(obj, callback) {
         const self = this;
         callback = callback || function () { };
-        if (isNil(obj)) {
+        if (obj == null) {
             return callback();
         }
         /**
@@ -397,7 +396,7 @@ class SqliteAdapter {
                         if (migration.remove > 0) {
                             for (let i = 0; i < migration.remove.length; i++) {
                                 let x = migration.remove[i];
-                                let colIndex = findIndex(columns, (y) => {
+                                let colIndex = columns.findIndex((y) => {
                                     return y.name === x.name;
                                 });
                                 if (colIndex >= 0) {
@@ -421,7 +420,7 @@ class SqliteAdapter {
                         if (migration.change > 0) {
                             for (let i = 0; i < migration.change.length; i++) {
                                 let x = migration.change[i];
-                                column = find(columns, (y) => {
+                                column = columns.find((y) => {
                                     return y.name === x.name;
                                 });
                                 if (column) {
@@ -453,7 +452,7 @@ class SqliteAdapter {
                     if (Array.isArray(migration.add)) {
                         for (let i = 0; i < migration.add.length; i++) {
                             let x = migration.add[i];
-                            column = find(columns, (y) => {
+                            column = columns.find((y) => {
                                 return (y.name === x.name);
                             });
                             if (column) {
@@ -1045,7 +1044,7 @@ class SqliteAdapter {
                             if (err) {
                                 return cb(err);
                             }
-                            index.columns = map(columns, function (x) {
+                            index.columns = columns.map(function (x) {
                                 return x.name;
                             });
                             return cb();

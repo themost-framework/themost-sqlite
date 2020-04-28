@@ -5,7 +5,7 @@ node_modules
 .idea
 .theia
 .vscode
-.DS_STORE
+.DS_Store
 
 # test
 spec

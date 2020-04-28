@@ -5,8 +5,6 @@
  * Use of this source code is governed by an BSD-3-Clause license that can be
  * found in the LICENSE file at https://themost.io/license
  */
-
-const _ = require('lodash');
 const util = require('util');
 const { SqlFormatter } = require('@themost/query');
 
@@ -190,19 +188,19 @@ class SqliteFormatter extends SqlFormatter {
     }
     $startswith(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (p0 == null || p1 == null)
             return '';
         return 'LIKE(\'' + this.escape(p1, true) + '%\',' + this.escape(p0) + ')';
     }
     $contains(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (p0 == null || p1 == null)
             return '';
         return 'LIKE(\'%' + this.escape(p1, true) + '%\',' + this.escape(p0) + ')';
     }
     $endswith(p0, p1) {
         //validate params
-        if (_.isNil(p0) || _.isNil(p1))
+        if (p0 == null || p1 == null)
             return '';
         return 'LIKE(\'%' + this.escape(p1, true) + '\',' + this.escape(p0) + ')';
     }
