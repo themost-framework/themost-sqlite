@@ -1,6 +1,14 @@
 ![test](https://github.com/themost-framework/themost-sqlite/workflows/test/badge.svg)
 [![npm](https://img.shields.io/npm/v/@themost%2Fsqlite.svg)](https://www.npmjs.com/package/@themost%2Fsqlite)
 ![](https://img.shields.io/david/themost-framework/themost-sqlite)
+![](https://img.shields.io/david/peer/themost-framework/themost-sqlite)
+![](https://img.shields.io/david/dev/themost-framework/themost-sqlite)
+![GitHub top language](https://img.shields.io/github/languages/top/themost-framework/themost-sqlite)
+[![License](https://img.shields.io/npm/l/@themost/sqlite)](https://github.com/themost-framework/themost-sqlite/blob/master/LICENSE)
+![GitHub last commit](https://img.shields.io/github/last-commit/themost-framework/themost-sqlite)
+![GitHub Release Date](https://img.shields.io/github/release-date/themost-framework/themost-sqlite)
+[![npm](https://img.shields.io/npm/dw/@themost/sqlite)](https://www.npmjs.com/package/@themost%2Fsqlite)
+![Snyk Vulnerabilities for npm package](https://img.shields.io/snyk/vulnerabilities/npm/@themost/sqlite)
 
 # @themost/sqlite
 MOST Web Framework SQLite Data Adapter
