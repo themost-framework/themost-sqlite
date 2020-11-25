@@ -13,6 +13,7 @@ const { QueryExpression, QueryField, SqlUtils } = require('@themost/query');
 const { SqliteFormatter } = require('./SqliteFormatter');
 const sqlite = require('sqlite3');
 const sqlite3 = sqlite.verbose();
+const SqlDateRegEx = /^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+\+[0-1][0-9]:[0-5][0-9]$/;
 /**
  * @class
  * @augments DataAdapter
@@ -949,9 +950,12 @@ class SqliteAdapter {
                                             keys = Object.keys(result[0]);
                                             result.forEach(function (x) {
                                                 keys.forEach(function (y) {
-                                                    if (x[y] === null) {
+                                                    const value = x[y];
+                                                    if (value === null) {
                                                         delete x[y];
-                                                    }
+                                                    } else if (typeof value === 'string' && SqlDateRegEx.test(value)) {
+                                                        x[y] = new Date(value);
+                                                    } 
                                                 });
                                             });
                                         }
@@ -959,9 +963,12 @@ class SqliteAdapter {
                                     else {
                                         keys = Object.keys(result);
                                         keys.forEach(function (y) {
-                                            if (result[y] === null) {
+                                            const value = result[y];
+                                            if (value === null) {
                                                 delete result[y];
-                                            }
+                                            } else if (typeof value === 'string' && SqlDateRegEx.test(value)) {
+                                                result[y] = new Date(value);
+                                            } 
                                         });
                                     }
                                 }
