@@ -23,7 +23,7 @@
   "homepage": "https://github.com/themost-framework/themost-sqlite#readme",
   "dependencies": {
     "async": "0.2.10",
-    "sqlite3": "^4.1.1"
+    "sqlite3": "^5.0.2"
   },
   "devDependencies": {
     "@themost/common": ">=2.5.0 < 3",
