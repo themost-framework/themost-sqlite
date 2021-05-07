@@ -1,6 +1,6 @@
 {
   "name": "@themost/sqlite",
-  "version": "2.5.4",
+  "version": "2.6.0",
   "description": "MOST Web Framework 2.0 - SQLite data adapter",
   "main": "index.js",
   "types": "index.d.ts",
@@ -25,8 +25,8 @@
     "async": "0.2.10",
     "sqlite3": "^5.0.2"
   },
-  "engines" : { 
-    "node" : ">=8" 
+  "engines": {
+    "node": ">=8"
   },
   "devDependencies": {
     "@themost/common": ">=2.5.0 < 3",
